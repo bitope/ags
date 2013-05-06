@@ -193,6 +193,12 @@ namespace AGS.Editor
 
             if ((_draggingRectangle) || (_SelectionWidth > 0))
             {
+                if (_draggingRectangle)
+                {
+                    int tmpSelectionWidth = Math.Abs(_mouseX - _startDraggingX) / _zoomLevel;
+                    int tmpSelectionHeight = Math.Abs(_mouseY - _startDraggingY) / _zoomLevel;
+                    lblSelectionSize.Text = String.Format("Selection size: {0}, {1}", tmpSelectionWidth, tmpSelectionHeight);
+                }
                 previewPanel.Invalidate();
             }
         }
@@ -297,6 +303,7 @@ namespace AGS.Editor
                 _draggingRectangle = false;
                 _SelectionWidth = Math.Abs(_mouseX - _startDraggingX) / _zoomLevel;
 				_SelectionHeight = Math.Abs(_mouseY - _startDraggingY) / _zoomLevel;
+                lblSelectionSize.Text = String.Format("Selection size: {0}, {1}", _SelectionWidth, _SelectionHeight);
 
                 Point cursorPos = Cursor.Position;
                 if (_mouseX > _startDraggingX)
