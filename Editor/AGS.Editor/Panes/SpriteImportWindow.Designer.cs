@@ -56,12 +56,14 @@ namespace AGS.Editor
             this.lblZoom = new System.Windows.Forms.Label();
             this.previewPanel = new AGS.Editor.BufferedPanel();
             this.btnCancel = new System.Windows.Forms.Button();
+            this.lblSelectionSize = new System.Windows.Forms.Label();
             this.groupBox1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.zoomSlider)).BeginInit();
             this.SuspendLayout();
             // 
             // groupBox1
             // 
+            this.groupBox1.Controls.Add(this.lblSelectionSize);
             this.groupBox1.Controls.Add(this.btnImportWholeImage);
             this.groupBox1.Controls.Add(this.lblHelpText);
             this.groupBox1.Controls.Add(this.chkTiled);
@@ -73,7 +75,7 @@ namespace AGS.Editor
             this.groupBox1.Controls.Add(this.chkRemapCols);
             this.groupBox1.Location = new System.Drawing.Point(12, 3);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(740, 106);
+            this.groupBox1.Size = new System.Drawing.Size(740, 140);
             this.groupBox1.TabIndex = 3;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Import options";
@@ -102,17 +104,17 @@ namespace AGS.Editor
             // chkTiled
             // 
             this.chkTiled.AutoSize = true;
-            this.chkTiled.Location = new System.Drawing.Point(14, 81);
+            this.chkTiled.Location = new System.Drawing.Point(14, 117);
             this.chkTiled.Name = "chkTiled";
-            this.chkTiled.Size = new System.Drawing.Size(111, 17);
+            this.chkTiled.Size = new System.Drawing.Size(81, 17);
             this.chkTiled.TabIndex = 9;
-            this.chkTiled.Text = "Tiled sprite import";
+            this.chkTiled.Text = "Tiled import";
             this.chkTiled.UseVisualStyleBackColor = true;
             // 
             // lblMousePos
             // 
             this.lblMousePos.AutoSize = true;
-            this.lblMousePos.Location = new System.Drawing.Point(11, 35);
+            this.lblMousePos.Location = new System.Drawing.Point(13, 35);
             this.lblMousePos.Name = "lblMousePos";
             this.lblMousePos.Size = new System.Drawing.Size(82, 13);
             this.lblMousePos.TabIndex = 8;
@@ -121,7 +123,7 @@ namespace AGS.Editor
             // lblImageSize
             // 
             this.lblImageSize.AutoSize = true;
-            this.lblImageSize.Location = new System.Drawing.Point(11, 17);
+            this.lblImageSize.Location = new System.Drawing.Point(13, 17);
             this.lblImageSize.Name = "lblImageSize";
             this.lblImageSize.Size = new System.Drawing.Size(62, 13);
             this.lblImageSize.TabIndex = 7;
@@ -139,7 +141,7 @@ namespace AGS.Editor
             "Bottom-right pixel",
             "Leave as-is",
             "No transparency"});
-            this.cmbTransparentCol.Location = new System.Drawing.Point(126, 54);
+            this.cmbTransparentCol.Location = new System.Drawing.Point(119, 95);
             this.cmbTransparentCol.Name = "cmbTransparentCol";
             this.cmbTransparentCol.Size = new System.Drawing.Size(126, 21);
             this.cmbTransparentCol.TabIndex = 6;
@@ -148,7 +150,7 @@ namespace AGS.Editor
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(11, 57);
+            this.label1.Location = new System.Drawing.Point(11, 98);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(102, 13);
             this.label1.TabIndex = 5;
@@ -179,12 +181,12 @@ namespace AGS.Editor
             // zoomSlider
             // 
             this.zoomSlider.LargeChange = 2;
-            this.zoomSlider.Location = new System.Drawing.Point(12, 124);
+            this.zoomSlider.Location = new System.Drawing.Point(12, 149);
             this.zoomSlider.Maximum = 5;
             this.zoomSlider.Minimum = 1;
             this.zoomSlider.Name = "zoomSlider";
             this.zoomSlider.Orientation = System.Windows.Forms.Orientation.Vertical;
-            this.zoomSlider.Size = new System.Drawing.Size(45, 145);
+            this.zoomSlider.Size = new System.Drawing.Size(42, 145);
             this.zoomSlider.TabIndex = 4;
             this.zoomSlider.Value = 1;
             this.zoomSlider.Scroll += new System.EventHandler(this.zoomSlider_Scroll);
@@ -192,7 +194,7 @@ namespace AGS.Editor
             // lblZoom
             // 
             this.lblZoom.AutoSize = true;
-            this.lblZoom.Location = new System.Drawing.Point(12, 274);
+            this.lblZoom.Location = new System.Drawing.Point(12, 299);
             this.lblZoom.Name = "lblZoom";
             this.lblZoom.Size = new System.Drawing.Size(55, 13);
             this.lblZoom.TabIndex = 5;
@@ -201,7 +203,8 @@ namespace AGS.Editor
             // previewPanel
             // 
             this.previewPanel.AutoScroll = true;
-            this.previewPanel.Location = new System.Drawing.Point(73, 124);
+            this.previewPanel.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.previewPanel.Location = new System.Drawing.Point(73, 149);
             this.previewPanel.MaximumSize = new System.Drawing.Size(679, 389);
             this.previewPanel.Name = "previewPanel";
             this.previewPanel.Size = new System.Drawing.Size(679, 389);
@@ -215,7 +218,7 @@ namespace AGS.Editor
             // btnCancel
             // 
             this.btnCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.btnCancel.Location = new System.Drawing.Point(7, 486);
+            this.btnCancel.Location = new System.Drawing.Point(7, 511);
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.Size = new System.Drawing.Size(60, 27);
             this.btnCancel.TabIndex = 6;
@@ -223,12 +226,21 @@ namespace AGS.Editor
             this.btnCancel.UseVisualStyleBackColor = true;
             this.btnCancel.Click += new System.EventHandler(this.btnCancel_Click);
             // 
+            // lblSelectionSize
+            // 
+            this.lblSelectionSize.AutoSize = true;
+            this.lblSelectionSize.Location = new System.Drawing.Point(13, 53);
+            this.lblSelectionSize.Name = "lblSelectionSize";
+            this.lblSelectionSize.Size = new System.Drawing.Size(75, 13);
+            this.lblSelectionSize.TabIndex = 12;
+            this.lblSelectionSize.Text = "Selection size:";
+            // 
             // SpriteImportWindow
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.btnCancel;
-            this.ClientSize = new System.Drawing.Size(764, 525);
+            this.ClientSize = new System.Drawing.Size(764, 550);
             this.Controls.Add(this.btnCancel);
             this.Controls.Add(this.lblZoom);
             this.Controls.Add(this.zoomSlider);
@@ -266,5 +278,6 @@ namespace AGS.Editor
         private System.Windows.Forms.Button btnImportWholeImage;
         private System.Windows.Forms.Label lblHelpText;
         private System.Windows.Forms.Button btnCancel;
+        private System.Windows.Forms.Label lblSelectionSize;
     }
 }
