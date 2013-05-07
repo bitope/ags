@@ -1544,6 +1544,14 @@ namespace AGS.Editor
 				NativeProxy.WritePrivateProfileString("misc", "gfxdriver", _game.Settings.GraphicsDriver.ToString(), configFilePath);
 			}
             NativeProxy.WritePrivateProfileString("misc", "titletext", _game.Settings.GameName + " Setup", configFilePath);
+
+            NativeProxy.GetPrivateProfileString("misc", "customwidth", "NULL", buffer, buffer.Capacity, configFilePath);
+            if (buffer.ToString() != _game.Settings.CustomResolution.Width.ToString())
+                NativeProxy.WritePrivateProfileString("misc", "customwidth", _game.Settings.CustomResolution.Width.ToString(), configFilePath);
+
+            NativeProxy.GetPrivateProfileString("misc", "customheight", "NULL", buffer, buffer.Capacity, configFilePath);
+            if (buffer.ToString() != _game.Settings.CustomResolution.Height.ToString())
+                NativeProxy.WritePrivateProfileString("misc", "customheight", _game.Settings.CustomResolution.Height.ToString(), configFilePath);
         }
 
 		private void BackupCurrentGameFile()

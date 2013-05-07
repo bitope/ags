@@ -1,11 +1,17 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Drawing;
 
 namespace AGS.Types
 {
     public static class Utilities
     {
+        public static Size GetGameResolution(GameResolutions resolution)
+        {
+            return new Size(GetGameResolutionWidth(resolution), GetGameResolutionHeight(resolution));
+        }
+
         public static int GetGameResolutionWidth(GameResolutions resolution)
         {
             switch (resolution)

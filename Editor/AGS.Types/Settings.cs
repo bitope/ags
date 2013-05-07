@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Xml;
+using System.Drawing;
 
 namespace AGS.Types
 {
@@ -12,6 +13,7 @@ namespace AGS.Types
         public const string PROPERTY_GAME_NAME = "Game name";
         public const string PROPERTY_COLOUR_DEPTH = "Colour depth";
         public const string PROPERTY_RESOLUTION = "Resolution";
+        public const string PROPERTY_RESOLUTION_CUSTOM = "Resolution (Custom)";
         public const string PROPERTY_SCALE_FONTS = "Fonts designed for 640x480";
 		public const string PROPERTY_ANTI_ALIAS_FONTS = "Anti-alias TTF fonts";
         public const string PROPERTY_LETTERBOX_MODE = "Enable letterbox mode";
@@ -27,6 +29,7 @@ namespace AGS.Types
 
         private string _gameName = "New game";
         private GameResolutions _resolution = GameResolutions.R320x200;
+        private Size _customResolution = new Size(320, 200);
         private GameColorDepth _colorDepth = GameColorDepth.HighColor;
 		private GraphicsDriver _graphicsDriver = GraphicsDriver.DX5;
         private bool _debugMode = true;
@@ -146,6 +149,16 @@ namespace AGS.Types
         {
             get { return _resolution; }
             set { _resolution = value; }
+        }
+
+        [DisplayName(PROPERTY_RESOLUTION_CUSTOM)]
+        [Description("Custom game resolution. Ignored if the Resolution property is not set to Custom Resolution.")]
+        [Category("(Setup)")]
+        [RefreshProperties(RefreshProperties.All)]
+        public Size CustomResolution
+        {
+            get { return _customResolution; }
+            set { _customResolution = value; }
         }
 
 		[DisplayName("Default graphics driver")]
@@ -887,6 +900,10 @@ namespace AGS.Types
         {
             // Show/hide the inventory marker details depending on whether it's
             // enabled or not.
+
+            // Show/hide Custom Width and Height depending on if Resolution is
+            // set to Custom Resolution or not.
+
             PropertyDescriptorCollection properties = TypeDescriptor.GetProperties(this, attributes, true);
             List<PropertyDescriptor> wantProperties = new List<PropertyDescriptor>();
             foreach (PropertyDescriptor property in properties)
@@ -909,6 +926,10 @@ namespace AGS.Types
                 {
                     // Only show letterbox option for 320x200 and 640x400 games
                     wantThisProperty = false;
+                }
+                else if (property.Name == "CustomResolution")
+                {
+                    wantThisProperty = _resolution == GameResolutions.CustomResolution;
                 }
 
                 if (wantThisProperty)

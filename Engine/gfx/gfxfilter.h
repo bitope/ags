@@ -37,6 +37,8 @@ public:
 
 GFXFilter **get_allegro_gfx_filter_list(bool checkingForSetup);
 GFXFilter **get_d3d_gfx_filter_list(bool checkingForSetup);
+GFXFilter *get_d3d_custom_resolution_filter(int custom_width, int custom_height, bool fullscreen);
+GFXFilter *get_allegro_custom_resolution_filter(int custom_width, int custom_height);
 
 
 extern GFXFilter *filter;

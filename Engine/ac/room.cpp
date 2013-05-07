@@ -406,7 +406,7 @@ void load_new_room(int newnum, CharacterInfo*forchar) {
             quitprintf("!Unable to load '%s'. This room file is assigned to a different game.", room_filename.GetCStr());
     }
 
-    if ((game.DefaultResolution > 2) && (game.Options[OPT_NATIVECOORDINATES] == 0))
+    if ((game.DefaultResolution > 2) && (game.Options[OPT_NATIVECOORDINATES] == 0) && (game.DefaultResolution != 7))
     {
         convert_room_coordinates_to_low_res(thisroom);
     }
@@ -555,6 +555,7 @@ void load_new_room(int newnum, CharacterInfo*forchar) {
             thisroom.Backgrounds[cc].Graphic = fix_bitmap_size(thisroom.Backgrounds[cc].Graphic);
     }
 
+	/*
     if ((thisroom.Backgrounds[0].Graphic->GetWidth() < scrnwid) ||
         (thisroom.Backgrounds[0].Graphic->GetHeight() < scrnhit))
     {
@@ -562,6 +563,7 @@ void load_new_room(int newnum, CharacterInfo*forchar) {
             "the game resolution, you will need to re-import the background for this room. (Room: %d, BG Size: %d x %d)",
             newnum, thisroom.Backgrounds[0].Graphic->GetWidth(), thisroom.Backgrounds[0].Graphic->GetHeight());
     }
+	*/
 
     recache_walk_behinds();
 

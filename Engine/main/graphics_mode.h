@@ -19,7 +19,7 @@
 #define __AGS_EE_MAIN__GRAPHICSMODE_H
 
 void engine_init_screen_settings();
-int  initialize_graphics_filter(const char *filterID, int width, int height, int colDepth);
+int  initialize_graphics_filter(const char *filterID, int width, int height, int colDepth, bool stretch_to_screen_resolution);
 int  engine_init_gfx_filters();
 void create_gfx_driver();
 int  init_gfx_mode(int wid,int hit,int cdep);

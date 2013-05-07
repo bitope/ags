@@ -220,9 +220,14 @@ void engine_init_screen_settings()
 
     vesa_xres=scrnwid; vesa_yres=scrnhit;
     //scrnwto=scrnwid-1; scrnhto=scrnhit-1;
-    current_screen_resolution_multiplier = scrnwid / BASEWIDTH;
+    current_screen_resolution_multiplier = scrnwid * 1.0f / BASEWIDTH;
 
-    if ((game.DefaultResolution > 2) &&
+	if (game.Options[OPT_NATIVECOORDINATES] && (game.DefaultResolution == 7) && usetup.CustomHeight>0 && usetup.CustomWidth>0)
+	{
+		current_screen_resolution_multiplier = 2;
+	}
+
+	if ((game.DefaultResolution > 2) && (game.DefaultResolution!=7) &&
         (game.Options[OPT_NATIVECOORDINATES]))
     {
         usetup.BaseWidth *= 2;
@@ -255,8 +260,23 @@ void engine_init_screen_settings()
     adjust_sizes_for_resolution(loaded_game_file_version);
 }
 
-int initialize_graphics_filter(const char *filterID, int width, int height, int colDepth)
+int initialize_graphics_filter(const char *filterID, int width, int height, int colDepth, bool stretch_to_desktop_resolution)
 {
+	if(game.DefaultResolution==7 && usetup.CustomWidth>0 && usetup.CustomHeight>0) {
+		if (stricmp(usetup.GfxDriverID, "D3D9") == 0)
+		{
+		  filter = get_d3d_custom_resolution_filter(usetup.CustomWidth, usetup.CustomHeight, stretch_to_desktop_resolution);
+		}
+		else
+		{
+		  filter = get_allegro_custom_resolution_filter(usetup.CustomWidth, usetup.CustomHeight);
+		}
+
+		filter->Initialize(width, height, colDepth);
+
+		return 0;
+	  }
+
     int idx = 0;
     GFXFilter **filterList;
 
@@ -340,7 +360,7 @@ int engine_init_gfx_filters()
     }
 #endif
 
-    if (initialize_graphics_filter(gfxfilter, initasx, initasy, firstDepth))
+    if (initialize_graphics_filter(gfxfilter, initasx, initasy, firstDepth, false))
     {
         return EXIT_NORMAL;
     }
@@ -514,9 +534,17 @@ int engine_init_graphics_mode()
 {
     Out::FPrint("Switching to graphics mode");
 
+	bool errorAndExit = false;
     if (switch_to_graphics_mode(initasx, initasy, scrnwid, scrnhit, firstDepth, secondDepth))
     {
-        bool errorAndExit = true;
+		delete filter;
+		if (initialize_graphics_filter(usetup.GfxFilterID, initasx, initasy, firstDepth, true))
+		{
+		  errorAndExit = true;
+		}
+		else if (switch_to_graphics_mode(initasx, initasy, scrnwid, scrnhit, firstDepth, secondDepth))
+		{
+		  errorAndExit = true;
 
         if (((usetup.GfxFilterID.IsEmpty()) || 
             (stricmp(usetup.GfxFilterID, "none") == 0)) &&
@@ -527,19 +555,18 @@ int engine_init_graphics_mode()
             Out::FPrint("320x200 not supported, trying with 2x filter");
             delete filter;
 
-            if (initialize_graphics_filter("StdScale2", initasx, initasy, firstDepth)) 
+			if (!initialize_graphics_filter("StdScale2", initasx, initasy, firstDepth, false)) 
             {
-                return EXIT_NORMAL;
-            }
 
-            create_gfx_driver();
+	            create_gfx_driver();
 
-            if (!switch_to_graphics_mode(initasx, initasy, scrnwid, scrnhit, firstDepth, secondDepth))
-            {
-                errorAndExit = false;
-            }
-
-        }
+	            if (!switch_to_graphics_mode(initasx, initasy, scrnwid, scrnhit, firstDepth, secondDepth))
+	            {
+	                errorAndExit = false;
+	            }
+			}
+		}
+	}
 
         if (errorAndExit)
         {

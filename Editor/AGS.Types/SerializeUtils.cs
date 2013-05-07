@@ -4,6 +4,7 @@ using System.Reflection;
 using System.Text;
 using System.Xml;
 using System.Globalization;
+using System.Drawing;
 
 namespace AGS.Types
 {
@@ -177,6 +178,14 @@ namespace AGS.Types
                 {
                     ConstructorInfo constructor = prop.PropertyType.GetConstructor(new Type[] { typeof(XmlNode) });
                     prop.SetValue(obj, constructor.Invoke(new object[] { child }), null);
+                }
+                else if (prop.PropertyType == typeof(Size))
+                {
+                    String width = elementValue.Substring("{Width=".Length, elementValue.IndexOf(",") - "{Width=".Length);
+                    String height = elementValue.Substring(elementValue.IndexOf("Height=") + "Height=".Length);
+                    height = height.Substring(0, height.Length - 1);
+
+                    prop.SetValue(obj, new Size(Convert.ToInt32(width), Convert.ToInt32(height)), null);
                 }
                 else
                 {

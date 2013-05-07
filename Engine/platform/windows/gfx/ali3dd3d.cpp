@@ -315,6 +315,7 @@ private:
   bool _smoothScaling;
   bool _legacyPixelShader;
   float _pixelRenderOffset;
+  bool _stretchedResolution;
   volatile int *_loopTimer;
   Bitmap *_screenTintLayer;
   D3DBitmap* _screenTintLayerDDB;
@@ -991,6 +992,7 @@ bool D3DGraphicsDriver::Init(int virtualWidth, int virtualHeight, int realWidth,
   _loopTimer = loopTimer;
 
   _filter->GetRealResolution(&_newmode_screen_width, &_newmode_screen_height);
+  _stretchedResolution = _newmode_screen_width!=realWidth || _newmode_screen_height!=realHeight;
 
   try
   {
@@ -1379,9 +1381,9 @@ void D3DGraphicsDriver::_renderSprite(SpriteDrawListEntry *drawListEntry, bool g
 
     make_translated_scaling_matrix(&matTransform, (float)thisX - _pixelRenderOffset, (float)thisY + _pixelRenderOffset, widthToScale, heightToScale);
 
-    if ((_smoothScaling) && (bmpToDraw->_stretchToHeight > 0) &&
+    if ((_smoothScaling) && (_stretchedResolution || (bmpToDraw->_stretchToHeight > 0) &&
         ((bmpToDraw->_stretchToHeight != bmpToDraw->_height) ||
-         (bmpToDraw->_stretchToWidth != bmpToDraw->_width)))
+         (bmpToDraw->_stretchToWidth != bmpToDraw->_width))))
     {
       direct3ddevice->SetSamplerState(0, D3DSAMP_MINFILTER, D3DTEXF_LINEAR);
       direct3ddevice->SetSamplerState(0, D3DSAMP_MAGFILTER, D3DTEXF_LINEAR);

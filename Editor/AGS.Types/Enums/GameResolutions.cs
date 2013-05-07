@@ -18,6 +18,8 @@ namespace AGS.Types
         [Description("800 x 600")]
         R800x600 = 5,
         [Description("1024 x 768")]
-        R1024x768 = 6
+        R1024x768 = 6,
+        [Description("Custom Resolution")]
+        CustomResolution = 7
     }
 }

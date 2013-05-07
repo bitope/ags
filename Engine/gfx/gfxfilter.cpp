@@ -19,6 +19,7 @@
 #include "gfx/gfxfilter_hq2x.h"
 #include "gfx/gfxfilter_hq3x.h"
 #include "gfx/gfxfilter_d3d.h"
+#include "gfx/gfxfilter_d3d_customres.h"
 #include "gfx/gfxfilter_aad3d.h"
 #include "device/mousew32.h"
 
@@ -61,7 +62,7 @@ GFXFilter::~GFXFilter()
 }
 
 
-GFXFilter *filter;
+GFXFilter *filter = NULL;
 
 GFXFilter *gfxFilterList[11];
 GFXFilter *gfxFilterListD3D[16];
@@ -105,6 +106,16 @@ GFXFilter **get_d3d_gfx_filter_list(bool checkingForSetup) {
     return gfxFilterListD3D;
 }
 
+GFXFilter *get_d3d_custom_resolution_filter(int custom_width, int custom_height, bool fullscreen) {
+  return new D3DGFXFilterCustomResolution(custom_width, custom_height, fullscreen);
+}
+
+GFXFilter *get_allegro_custom_resolution_filter(int custom_width, int custom_height) {
+	return new AllegroGFXFilter(1,false);
+  //return NULL;
+}
+
+
 /*
 const char *initialize_gfx_filter(int width, int height, int depth) {
 
@@ -120,3 +131,4 @@ return filter->Initialize(width, height, depth);
 }
 
 */
+

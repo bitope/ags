@@ -290,4 +290,6 @@ void read_config_file(char *argv0) {
     if (usetup.GfxDriverID.IsEmpty())
         usetup.GfxDriverID = "DX5";
 
+	usetup.CustomWidth = INIreadint("misc", "customwidth");
+	usetup.CustomHeight = INIreadint("misc", "customheight");
 }

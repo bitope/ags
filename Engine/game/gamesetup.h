@@ -46,6 +46,8 @@ public:
     int32_t Windowed;
     int32_t BaseWidth;
     int32_t BaseHeight;
+	int32_t CustomWidth;
+	int32_t CustomHeight;
     int16_t RefreshRate;
     bool    NoSpeechPack;
     bool    EnableAntiAliasing;

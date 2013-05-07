@@ -15,6 +15,10 @@
 #ifndef __AC_GFXFILTERHELPERS_H
 #define __AC_GFXFILTERHELPERS_H
 
+#include "util/wgt2allg.h"
+#include "gfx/gfxfilter_scaling.h"
+#include "gfx/gfxfilter_d3d_customres.h"
+
 struct MouseGetPosCallbackImpl : IMouseGetPosCallback {
 protected:
     ScalingGFXFilter *_callbackFilter;
@@ -31,4 +35,22 @@ public:
     }
 };
 
+struct CustomResolutionMouseGetPosCallbackImpl : IMouseGetPosCallback {
+protected:
+  D3DGFXFilterCustomResolution *_callbackFilter;
+
+public:
+  CustomResolutionMouseGetPosCallbackImpl(D3DGFXFilterCustomResolution *filter)
+  {
+    _callbackFilter = filter;
+  }
+
+  virtual void AdjustPosition(int *x, int *y)
+  {
+    _callbackFilter->AdjustPosition(x, y);
+  }
+};
+
+
 #endif // __AC_GFXFILTERHELPERS_H
+

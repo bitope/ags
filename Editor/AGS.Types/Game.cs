@@ -389,19 +389,25 @@ namespace AGS.Types
         {
             get
             {
-                return Utilities.GetGameResolutionHeight(_settings.Resolution);
+                if (Settings.Resolution == GameResolutions.CustomResolution)
+                    return Settings.CustomResolution.Height;
+                else
+                    return Utilities.GetGameResolutionHeight(_settings.Resolution);
             }
         }
 
-		/// <summary>
-		/// Returns the minimum width of the room background
-		/// for the current game resolution.
-		/// </summary>
+        /// <summary>
+        /// Returns the minimum width of the room background
+        /// for the current game resolution.
+        /// </summary>
         public int MinRoomWidth
         {
             get
             {
-                return Utilities.GetGameResolutionWidth(_settings.Resolution);
+                if (Settings.Resolution == GameResolutions.CustomResolution)
+                    return Settings.CustomResolution.Width;
+                else
+                    return Utilities.GetGameResolutionWidth(_settings.Resolution);
             }
         }
 
