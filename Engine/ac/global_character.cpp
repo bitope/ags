@@ -33,14 +33,13 @@
 #include "ac/string.h"
 #include "debug/debug_log.h"
 #include "game/game_objects.h"
+#include "game/script_objects.h"
 #include "main/game_run.h"
 #include "script/script.h"
 
 
 extern ViewStruct*views;
 extern int spritewidth[MAX_SPRITES],spriteheight[MAX_SPRITES];
-extern ScriptObject scrObj[MAX_INIT_SPR];
-extern ScriptInvItem scrInv[MAX_INV];
 extern int offsetx, offsety;
 extern int guis_need_update;
 extern ScreenOverlay screenover[MAX_SCREEN_OVERLAYS];
@@ -335,7 +334,7 @@ void MoveCharacterToObject(int chaa,int obbj) {
 }
 
 void MoveCharacterToHotspot(int chaa,int hotsp) {
-    if ((hotsp<0) || (hotsp>=MAX_HOTSPOTS))
+    if ((hotsp<0) || (hotsp>=thisroom.HotspotCount))
         quit("!MovecharacterToHotspot: invalid hotspot");
     if (thisroom.Hotspots[hotsp].WalkToPoint.x<1) return;
     walk_character(chaa,thisroom.Hotspots[hotsp].WalkToPoint.x,thisroom.Hotspots[hotsp].WalkToPoint.y,0, true);

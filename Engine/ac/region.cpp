@@ -17,13 +17,12 @@
 #include "ac/global_region.h"
 #include "ac/dynobj/cc_region.h"
 #include "game/game_objects.h"
+#include "game/script_objects.h"
 #include "script/runtimescriptvalue.h"
 
 
-extern ScriptRegion scrRegion[MAX_REGIONS];
 extern COLOR_MAP maincoltable;
 extern color palette[256];
-extern CCRegion ccDynamicRegion;
 
 
 ScriptRegion *GetRegionAtLocation(int xx, int yy) {
@@ -96,7 +95,7 @@ void generate_light_table() {
     int cc;
     if ((game.ColorDepth == 1) && (color_map == NULL)) {
         // in 256-col mode, check if we need the light table this room
-        for (cc=0;cc < MAX_REGIONS;cc++) {
+        for (cc=0;cc < thisroom.RegionCount;cc++) {
             if (thisroom.Regions[cc].Light < 0) {
                 create_light_table(&maincoltable,palette,0,0,0,NULL);
                 color_map=&maincoltable;

@@ -59,6 +59,7 @@
 #include "debug/out.h"
 #include "font/fonts.h"
 #include "game/game_objects.h"
+#include "game/script_objects.h"
 #include "gfx/ali3d.h"
 #include "gui/animatingguibutton.h"
 #include "gfx/graphics.h"
@@ -88,7 +89,6 @@ using AGS::Common::Graphics;
 namespace BitmapHelper = AGS::Common::BitmapHelper;
 namespace Math = AGS::Common::Math;
 
-extern ScriptAudioChannel scrAudioChannel[MAX_SOUND_CHANNELS + 1];
 extern int time_between_timers;
 extern Bitmap *virtual_screen;
 extern int cur_mode,cur_cursor;
@@ -151,23 +151,6 @@ SpriteCache spriteset(1);
 int proper_exit=0,our_eip=0;
 
 GUIMain*guis=NULL;
-
-CCGUIObject ccDynamicGUIObject;
-CCCharacter ccDynamicCharacter;
-CCHotspot   ccDynamicHotspot;
-CCRegion    ccDynamicRegion;
-CCInventory ccDynamicInv;
-CCGUI       ccDynamicGUI;
-CCObject    ccDynamicObject;
-CCDialog    ccDynamicDialog;
-ScriptString myScriptStringImpl;
-ScriptObject scrObj[MAX_INIT_SPR];
-ScriptGUI    *scrGui = NULL;
-ScriptHotspot scrHotspot[MAX_HOTSPOTS];
-ScriptRegion scrRegion[MAX_REGIONS];
-ScriptInvItem scrInv[MAX_INV];
-ScriptDialog scrDialog[MAX_DIALOG];
-
 ViewStruct*views=NULL;
 
 //=============================================================================
@@ -589,7 +572,7 @@ void unload_game_file() {
     free(guibg);
     free (guis);
     guis = NULL;
-    free(scrGui);
+    scrGui.Free();
 
     platform->ShutdownPlugins();
     ccRemoveAllSymbols();
@@ -1125,7 +1108,7 @@ void WriteMoveList_Aligned(Stream *out)
     }
     MoveList dummy_movlist;
     memset(&dummy_movlist, 0, sizeof(dummy_movlist));
-    for (int i = ObjMoveLists.GetCount(); i < CHMLSOFFS; ++i)
+    for (int i = ObjMoveLists.GetCount(); i < LEGACY_MOVELIST_CHARACTER_OFFSET; ++i)
     {
         dummy_movlist.WriteToFile(&align_s);
         align_s.Reset();
@@ -1197,21 +1180,37 @@ void save_game_audiocliptypes(Stream *out)
 
 void save_game_thisroom(Stream *out)
 {
-    for (int i = 0; i < MAX_REGIONS; ++i)
+    for (int i = 0; i < thisroom.RegionCount; ++i)
     {
         out->WriteInt16(thisroom.Regions[i].Light);
     }
-    for (int i = 0; i < MAX_REGIONS; ++i)
+    for (int i = thisroom.RegionCount; i < LEGACY_MAX_ROOM_REGIONS; ++i)
+    {
+        out->WriteInt16(0);
+    }
+    for (int i = 0; i < thisroom.RegionCount; ++i)
     {
         out->WriteInt32(thisroom.Regions[i].Tint);
     }
-    for (int i = 0; i < MAX_WALK_AREAS + 1; ++i)
+    for (int i = thisroom.RegionCount; i < LEGACY_MAX_ROOM_REGIONS; ++i)
+    {
+        out->WriteInt32(0);
+    }
+    for (int i = 0; i < thisroom.WalkAreaCount; ++i)
     {
         out->WriteInt16(thisroom.WalkAreas[i].Zoom);
     }
-    for (int i = 0; i < MAX_WALK_AREAS + 1; ++i)
+    for (int i = thisroom.WalkAreaCount; i < LEGACY_MAX_ROOM_WALKAREAS + 1; ++i)
+    {
+        out->WriteInt16(0);
+    }
+    for (int i = 0; i < thisroom.WalkAreaCount; ++i)
     {
         out->WriteInt16(thisroom.WalkAreas[i].Zoom2);
+    }
+    for (int i = thisroom.WalkAreaCount; i < LEGACY_MAX_ROOM_WALKAREAS + 1; ++i)
+    {
+        out->WriteInt16(0);
     }
 }
 
@@ -1764,7 +1763,7 @@ void ReadMoveList_Aligned(Stream *in)
     }
     MoveList dummy_movlist;
     memset(&dummy_movlist, 0, sizeof(dummy_movlist));
-    for (int i = ObjMoveLists.GetCount(); i < CHMLSOFFS; ++i)
+    for (int i = ObjMoveLists.GetCount(); i < LEGACY_MOVELIST_CHARACTER_OFFSET; ++i)
     {
         dummy_movlist.ReadFromFile(&align_s);
         align_s.Reset();
@@ -1848,10 +1847,10 @@ void restore_game_audiocliptypes(Stream *in)
 void restore_game_thisroom(Stream *in, short *saved_light_levels, int *saved_tint_levels,
                            short *saved_zoom_levels1, short *saved_zoom_levels2)
 {
-    in->ReadArrayOfInt16(&saved_light_levels[0],MAX_REGIONS);
-    in->ReadArrayOfInt32(&saved_tint_levels[0], MAX_REGIONS);
-    in->ReadArrayOfInt16(&saved_zoom_levels1[0],MAX_WALK_AREAS + 1);
-    in->ReadArrayOfInt16(&saved_zoom_levels2[0],MAX_WALK_AREAS + 1);
+    in->ReadArrayOfInt16(&saved_light_levels[0],LEGACY_MAX_ROOM_REGIONS);
+    in->ReadArrayOfInt32(&saved_tint_levels[0], LEGACY_MAX_ROOM_REGIONS);
+    in->ReadArrayOfInt16(&saved_zoom_levels1[0],LEGACY_MAX_ROOM_WALKAREAS + 1);
+    in->ReadArrayOfInt16(&saved_zoom_levels2[0],LEGACY_MAX_ROOM_WALKAREAS + 1);
 }
 
 void restore_game_ambientsounds(Stream *in, int crossfadeInChannelWas, int crossfadeOutChannelWas,
@@ -2038,6 +2037,42 @@ void restore_game_audioclips_and_crossfade(Stream *in, int crossfadeInChannelWas
     crossFadeVolumeAtStart = in->ReadInt32();
 }
 
+void restore_game_before_managed_pool()
+{
+    // Allocate maximal allowed size in case we are loading the game saved by
+    // the older engine version.
+    // The script object arrays cannot be _enlarged_ while objects are
+    // registered at this point, because that may cause reallocation and change
+    // of their position in memory; this will require different way to store them
+    // and/or managed pool redesign.
+    // Arrays might be truncated when room is loaded though (which won't
+    // reallocate objects in memory).
+    ccUnregisterAllObjects();
+
+    scrDialog.SetLength(MAX_DIALOG);
+    scrHotspot.SetLength(LEGACY_MAX_ROOM_HOTSPOTS);
+    scrInv.SetLength(MAX_INV);
+    scrObj.SetLength(LEGACY_MAX_ROOM_OBJECTS);
+    scrRegion.SetLength(LEGACY_MAX_ROOM_REGIONS);
+}
+
+void restore_game_after_managed_pool()
+{
+    // Now, unregister all extra game objects to clean the pool from unnecessary entries
+    // in case the game was saved by an older engine version.
+    for (int i = game.DialogCount; i < scrDialog.GetCount(); ++i)
+    {
+        ccUnRegisterManagedObject(&scrDialog[i]);
+    }
+    for (int i = game.InvItemCount; i < scrInv.GetCount(); ++i)
+    {
+        ccUnRegisterManagedObject(&scrInv[i]);
+    }
+    scrDialog.SetLength(game.DialogCount);
+    scrInv.SetLength(game.InvItemCount);
+    // NOTE: the room objects and regions will be cleaned at the current room load
+}
+
 int restore_game_data (Stream *in, const char *nametouse) {
 
     int bb, vv;
@@ -2071,7 +2106,7 @@ int restore_game_data (Stream *in, const char *nametouse) {
     // Unfortunately we do not know the exact number of objects in the current
     // room at this point, so we will read maximal movelist number allowed
     // by vanilla AGS. The array size will be corrected after room is loaded.
-    ObjMoveLists.SetLength(CHMLSOFFS);
+    ObjMoveLists.SetLength(LEGACY_MOVELIST_CHARACTER_OFFSET);
     ReadMoveList_Aligned(in);
 
     int numchwas = game.CharacterCount;
@@ -2105,10 +2140,10 @@ int restore_game_data (Stream *in, const char *nametouse) {
     restore_game_gui(in, numGuisWas);
     restore_game_audiocliptypes(in);
 
-    short saved_light_levels[MAX_REGIONS];
-    int   saved_tint_levels[MAX_REGIONS];
-    short saved_zoom_levels1[MAX_WALK_AREAS + 1];
-    short saved_zoom_levels2[MAX_WALK_AREAS + 1];
+    short saved_light_levels[LEGACY_MAX_ROOM_REGIONS];
+    int   saved_tint_levels[LEGACY_MAX_ROOM_REGIONS];
+    short saved_zoom_levels1[LEGACY_MAX_ROOM_WALKAREAS + 1];
+    short saved_zoom_levels2[LEGACY_MAX_ROOM_WALKAREAS + 1];
     restore_game_thisroom(in, saved_light_levels, saved_tint_levels, saved_zoom_levels1, saved_zoom_levels2);
 
     int crossfadeInChannelWas = play.CrossfadingInChannel;
@@ -2144,8 +2179,12 @@ int restore_game_data (Stream *in, const char *nametouse) {
     // save the new room music vol for later use
     int newRoomVol = in->ReadInt32();
 
+    restore_game_before_managed_pool();
+
     if (ccUnserializeAllObjects(in, &ccUnserializer))
         quitprintf("LoadGame: Error during deserialization: %s", ccErrorString);
+
+    restore_game_after_managed_pool();
 
     // preserve legacy music type setting
     current_music_type = in->ReadInt32();
@@ -2226,14 +2265,14 @@ int restore_game_data (Stream *in, const char *nametouse) {
 
         in_new_room=3;  // don't run "enters screen" events
         // now that room has loaded, copy saved light levels in
-        for (int i = 0; i < MAX_REGIONS; ++i)
+        for (int i = 0; i < thisroom.RegionCount; ++i)
         {
             thisroom.Regions[i].Light = saved_light_levels[i];
             thisroom.Regions[i].Tint = saved_tint_levels[i];
         }
         generate_light_table();
 
-        for (int i = 0; i < MAX_WALK_AREAS + 1; ++i)
+        for (int i = 0; i < thisroom.WalkAreaCount; ++i)
         {
             thisroom.WalkAreas[i].Zoom = saved_zoom_levels1[i];
             thisroom.WalkAreas[i].Zoom2 = saved_zoom_levels2[i];
